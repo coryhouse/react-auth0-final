@@ -13,11 +13,6 @@ class Nav extends Component {
           <li>
             <Link to="/profile">Profile</Link>
           </li>
-          <li>
-            <button onClick={isAuthenticated() ? logout : login}>
-              {isAuthenticated() ? "Log Out" : "Log In"}
-            </button>
-          </li>
         </ul>
       </nav>
     );
