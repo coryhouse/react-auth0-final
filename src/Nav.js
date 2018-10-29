@@ -21,12 +21,6 @@ class Nav extends Component {
               <Link to="/private">Private</Link>
             </li>
           )}
-          {isAuthenticated() &&
-            userHasScopes(["read:courses"]) && (
-              <li>
-                <Link to="/courses">Courses</Link>
-              </li>
-            )}
           <li>
             <button onClick={isAuthenticated() ? logout : login}>
               {isAuthenticated() ? "Log Out" : "Log In"}
