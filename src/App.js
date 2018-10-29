@@ -7,7 +7,6 @@ import Auth from "./Auth/Auth";
 import Callback from "./Callback";
 import Public from "./Public";
 import Private from "./Private";
-import Courses from "./Courses";
 
 class App extends Component {
   constructor(props) {
