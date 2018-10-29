@@ -52,7 +52,7 @@ app.delete(
   checkJwt,
   checkScope(["delete:courses"]),
   function(req, res) {
-    res.json({ message: `Delete ${req.params.courseId}` });
+    res.json({ message: `Deleted ${req.params.courseId}` });
   }
 );
 
