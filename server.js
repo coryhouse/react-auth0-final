@@ -2,7 +2,6 @@ const express = require("express");
 require("dotenv").config();
 const jwt = require("express-jwt"); // Validate JWT and set req.user
 const jwksRsa = require("jwks-rsa"); // Retrieve RSA keys from a JSON Web Key set (JWKS) endpoint
-const checkScope = require("express-jwt-authz"); // Validate JWT scopes
 
 const checkJwt = jwt({
   // Dynamically provide a signing key based on the kid in the header
@@ -37,24 +36,6 @@ app.get("/private", checkJwt, function(req, res) {
     message: "Hello from a private API!"
   });
 });
-
-app.get("/course", checkJwt, checkScope(["read:courses"]), function(req, res) {
-  res.json({
-    courses: [
-      { id: 1, title: "Building Apps with React and Redux" },
-      { id: 2, title: "Creating Reusable React Components" }
-    ]
-  });
-});
-
-app.delete(
-  "/course/:courseId",
-  checkJwt,
-  checkScope(["delete:courses"]),
-  function(req, res) {
-    res.json({ message: `Deleted ${req.params.courseId}` });
-  }
-);
 
 app.listen(3001);
 console.log("API server listening on " + process.env.REACT_APP_AUTH0_AUDIENCE);
