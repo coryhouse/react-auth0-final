@@ -1,6 +1,14 @@
 import auth0 from "auth0-js";
 
 const REDIRECT_ON_LOGIN = "redirect_on_login";
+// Deliberately here to keep private
+let _idToken = null;
+let _accessToken = null;
+
+// Private func
+function getAuthHeader() {
+  return { Authorization: `Bearer ${_accessToken}` };
+}
 
 export default class Auth {
   constructor(history) {
@@ -56,8 +64,10 @@ export default class Auth {
     // set it to nothing
     const scopes = authResult.scope || this.requestedScopes || "";
 
-    localStorage.setItem("access_token", authResult.accessToken);
-    localStorage.setItem("id_token", authResult.idToken);
+    _accessToken = authResult.accessToken;
+    _idToken = authResult.idToken;
+    this.scheduleTokenRenewal();
+
     localStorage.setItem("expires_at", expiresAt);
     localStorage.setItem("scopes", JSON.stringify(scopes));
   };
@@ -68,28 +78,19 @@ export default class Auth {
   }
 
   logout = () => {
-    localStorage.removeItem("access_token");
-    localStorage.removeItem("id_token");
     localStorage.removeItem("expires_at");
     localStorage.removeItem("scopes");
-    this.userProfile = null;
+
     this.auth0.logout({
       clientID: process.env.REACT_APP_AUTH0_CLIENT_ID,
       returnTo: "http://localhost:3000"
     });
   };
 
-  getAccessToken = () => {
-    const accessToken = localStorage.getItem("access_token");
-    if (!accessToken) {
-      throw new Error("No access token found.");
-    }
-    return accessToken;
-  };
-
   getProfile = cb => {
     if (this.userProfile) return cb(this.userProfile);
-    this.auth0.client.userInfo(this.getAccessToken(), (err, profile) => {
+    if (!_accessToken) return this.login();
+    this.auth0.client.userInfo(_accessToken, (err, profile) => {
       if (profile) this.userProfile = profile;
       cb(profile, err);
     });
@@ -100,5 +101,52 @@ export default class Auth {
       JSON.parse(localStorage.getItem("scopes")) || ""
     ).split(" ");
     return scopes.every(scope => grantedScopes.includes(scope));
+  }
+
+  renewToken(cb) {
+    // The first parameter to checkSession allows us to specify the audience and scope.
+    // It uses the settings from when we instantiated this Auth0 WebAuth object
+    // if we omit these properties.
+    this.auth0.checkSession({}, (err, result) => {
+      if (err) {
+        console.log(`Error: ${err.error} - ${err.error_description}.`);
+      } else {
+        this.setSession(result);
+      }
+      if (cb) cb(result);
+    });
+  }
+
+  scheduleTokenRenewal() {
+    const expiresAt = JSON.parse(localStorage.getItem("expires_at"));
+    const delay = expiresAt - Date.now();
+    // Delay in milliseconds before requesting renewal.
+    // Will be 7200000 (120 minutes) immediately after login
+    // since Auth0's default token expiration is 2 hours.
+    if (delay > 0) setTimeout(() => this.renewToken(), delay);
+  }
+
+  // ----------------
+  // API Calls
+  // These calls are composed here so we can keep the access token private to this file
+  // This protects from XSS since the access token isn't accessible outside this file
+
+  getPrivate() {
+    return fetch("/private", {
+      headers: getAuthHeader()
+    });
+  }
+
+  getCourse() {
+    return fetch("/course", {
+      headers: getAuthHeader()
+    });
+  }
+
+  deleteCourse(courseId) {
+    return fetch(`/course/${courseId}`, {
+      method: "DELETE",
+      headers: getAuthHeader()
+    });
   }
 }
