@@ -1,7 +1,7 @@
 import auth0 from "auth0-js";
 
 const REDIRECT_ON_LOGIN = "redirect_on_login";
-// Deliberately here to keep private
+// Deliberately stored outside of class to keep private
 let _idToken = null;
 let _accessToken = null;
 
