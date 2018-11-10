@@ -1,9 +1,11 @@
 import auth0 from "auth0-js";
 
 const REDIRECT_ON_LOGIN = "redirect_on_login";
-// Deliberately stored outside of class to keep private
+
+// Stored outside of class since private
 let _idToken = null;
 let _accessToken = null;
+let _scopes = null;
 
 // Private func
 function getAuthHeader() {
@@ -66,10 +68,10 @@ export default class Auth {
 
     _accessToken = authResult.accessToken;
     _idToken = authResult.idToken;
+    _scopes = authResult.scopes;
     this.scheduleTokenRenewal();
 
     localStorage.setItem("expires_at", expiresAt);
-    localStorage.setItem("scopes", JSON.stringify(scopes));
   };
 
   isAuthenticated() {
@@ -79,7 +81,6 @@ export default class Auth {
 
   logout = () => {
     localStorage.removeItem("expires_at");
-    localStorage.removeItem("scopes");
 
     this.auth0.logout({
       clientID: process.env.REACT_APP_AUTH0_CLIENT_ID,
@@ -97,9 +98,7 @@ export default class Auth {
   };
 
   userHasScopes(scopes) {
-    const grantedScopes = (
-      JSON.parse(localStorage.getItem("scopes")) || ""
-    ).split(" ");
+    const grantedScopes = (_scopes || "").split(" ");
     return scopes.every(scope => grantedScopes.includes(scope));
   }
 
