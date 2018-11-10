@@ -7,11 +7,6 @@ let _accessToken = null;
 let _scopes = null;
 let _expiresAt = null;
 
-// Private func
-function getAuthHeader() {
-  return { Authorization: `Bearer ${_accessToken}` };
-}
-
 export default class Auth {
   constructor(history) {
     this.history = history;
@@ -89,6 +84,13 @@ export default class Auth {
     // });
   };
 
+  getAccessToken = () => {
+    if (!_accessToken) {
+      throw new Error("No access token found.");
+    }
+    return _accessToken;
+  };
+
   getProfile = cb => {
     if (this.userProfile) return cb(this.userProfile);
     if (!_accessToken) return this.login();
@@ -123,29 +125,5 @@ export default class Auth {
     // Will be 7200000 (120 minutes) immediately after login
     // since Auth0's default token expiration is 2 hours.
     if (delay > 0) setTimeout(() => this.renewToken(), delay);
-  }
-
-  // ----------------
-  // API Calls
-  // These calls are composed here so we can keep the access token private to this file
-  // This protects from XSS since the access token isn't accessible outside this file
-
-  getPrivate() {
-    return fetch("/private", {
-      headers: getAuthHeader()
-    });
-  }
-
-  getCourse() {
-    return fetch("/course", {
-      headers: getAuthHeader()
-    });
-  }
-
-  deleteCourse(courseId) {
-    return fetch(`/course/${courseId}`, {
-      method: "DELETE",
-      headers: getAuthHeader()
-    });
   }
 }

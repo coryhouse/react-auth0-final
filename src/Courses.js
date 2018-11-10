@@ -6,8 +6,11 @@ class Courses extends Component {
   };
 
   componentDidMount() {
-    this.props.auth
-      .getCourse()
+    fetch("/course", {
+      headers: {
+        Authorization: `Bearer ${this.props.auth.getAccessToken()}`
+      }
+    })
       .then(response => {
         if (response.ok) return response.json();
         throw new Error("Network response was not ok.");
@@ -17,8 +20,10 @@ class Courses extends Component {
   }
 
   deleteCourse(courseId) {
-    this.props.auth
-      .deleteCourse(courseId)
+    fetch(`/course/${courseId}`, {
+      method: "DELETE",
+      headers: { Authorization: `Bearer ${this.props.auth.getAccessToken()}` }
+    })
       .then(response => {
         if (response.ok) return response.json();
         throw new Error("Network response was not ok.");

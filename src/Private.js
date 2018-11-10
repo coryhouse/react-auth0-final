@@ -6,8 +6,11 @@ class Private extends Component {
   };
 
   componentDidMount() {
-    this.props.auth
-      .getPrivate()
+    fetch("/private", {
+      headers: {
+        Authorization: `Bearer ${this.props.auth.getAccessToken()}`
+      }
+    })
       .then(response => {
         if (response.ok) return response.json();
         throw new Error("Network response was not ok.");
