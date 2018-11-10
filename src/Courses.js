@@ -7,9 +7,7 @@ class Courses extends Component {
 
   componentDidMount() {
     fetch("/course", {
-      headers: {
-        Authorization: `Bearer ${this.props.auth.getAccessToken()}`
-      }
+      headers: { Authorization: `Bearer ${this.props.auth.getAccessToken()}` }
     })
       .then(response => {
         if (response.ok) return response.json();
