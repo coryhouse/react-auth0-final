@@ -5,6 +5,7 @@ const REDIRECT_ON_LOGIN = "redirect_on_login";
 // Stored outside of class since private
 let _accessToken = null;
 let _scopes = null;
+let _expiresAt = null;
 
 // Private func
 function getAuthHeader() {
@@ -53,11 +54,8 @@ export default class Auth {
   };
 
   setSession = authResult => {
-    console.log(authResult);
     // set the time that the access token will expire
-    const expiresAt = JSON.stringify(
-      authResult.expiresIn * 1000 + new Date().getTime()
-    );
+    _expiresAt = authResult.expiresIn * 1000 + new Date().getTime();
 
     // If there is a value on the `scope` param from the authResult,
     // use it to set scopes in the session for the user. Otherwise
@@ -69,17 +67,14 @@ export default class Auth {
     _scopes = scopes;
     this.scheduleTokenRenewal();
 
-    localStorage.setItem("expires_at", expiresAt);
     localStorage.setItem("checkSession", true);
   };
 
   isAuthenticated() {
-    const expiresAt = JSON.parse(localStorage.getItem("expires_at"));
-    return new Date().getTime() < expiresAt;
+    return new Date().getTime() < _expiresAt;
   }
 
   logout = () => {
-    localStorage.removeItem("expires_at");
     localStorage.removeItem("checkSession");
 
     // Load homepage. This will reload the app which will clear all vars.
@@ -123,8 +118,7 @@ export default class Auth {
   }
 
   scheduleTokenRenewal() {
-    const expiresAt = JSON.parse(localStorage.getItem("expires_at"));
-    const delay = expiresAt - Date.now();
+    const delay = _expiresAt - Date.now();
     // Delay in milliseconds before requesting renewal.
     // Will be 7200000 (120 minutes) immediately after login
     // since Auth0's default token expiration is 2 hours.
