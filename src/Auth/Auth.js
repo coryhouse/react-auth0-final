@@ -2,7 +2,8 @@ import auth0 from "auth0-js";
 
 const REDIRECT_ON_LOGIN = "redirect_on_login";
 
-// Stored outside of class since private
+// Stored outside class since private
+let _idToken = null;
 let _accessToken = null;
 let _scopes = null;
 let _expiresAt = null;
@@ -58,6 +59,7 @@ export default class Auth {
     // set it to nothing
     const scopes = authResult.scope || this.requestedScopes || "";
 
+    _idToken = authResult.idToken;
     _accessToken = authResult.accessToken;
     _scopes = scopes;
     this.scheduleTokenRenewal();
@@ -72,16 +74,10 @@ export default class Auth {
   logout = () => {
     localStorage.removeItem("checkSession");
 
-    // Load homepage. This will reload the app which will clear all vars.
-    window.location.replace("http://localhost:3000");
-
-    // Or, optionally, can kill the session at Auth0
-    // But may not be desirable if you're using SSO
-    // since doing so would log user out of all apps.
-    // this.auth0.logout({
-    //   clientID: process.env.REACT_APP_AUTH0_CLIENT_ID,
-    //   returnTo: "http://localhost:3000"
-    // });
+    this.auth0.logout({
+      clientID: process.env.REACT_APP_AUTH0_CLIENT_ID,
+      returnTo: "http://localhost:3000"
+    });
   };
 
   getAccessToken = () => {
