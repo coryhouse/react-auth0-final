@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { Route, Redirect } from "react-router-dom";
+import { Route } from "react-router-dom";
 import Home from "./Home";
 import Profile from "./Profile";
 import Nav from "./Nav";
@@ -15,11 +15,24 @@ class App extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      auth: new Auth(this.props.history)
+      auth: new Auth(this.props.history),
+      tokenRenewalComplete: false
     };
   }
+
+  componentDidMount() {
+    const { auth } = this.state;
+    if (localStorage.getItem("checkSession")) {
+      auth.renewToken(() => this.setState({ tokenRenewalComplete: true }));
+    } else {
+      this.setState({ tokenRenewalComplete: true });
+    }
+  }
+
   render() {
     const { auth } = this.state;
+    // Show loading message until the token renewal check is completed.
+    if (!this.state.tokenRenewalComplete) return "Loading...";
     return (
       <AuthContext.Provider value={auth}>
         <Nav auth={auth} />
