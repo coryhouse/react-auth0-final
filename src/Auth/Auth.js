@@ -57,11 +57,10 @@ export default class Auth {
     // use it to set scopes in the session for the user. Otherwise
     // use the scopes as requested. If no scopes were requested,
     // set it to nothing
-    const scopes = authResult.scope || this.requestedScopes || "";
+    _scopes = authResult.scope || this.requestedScopes || "";
 
     _idToken = authResult.idToken;
     _accessToken = authResult.accessToken;
-    _scopes = scopes;
     this.scheduleTokenRenewal();
 
     localStorage.setItem("checkSession", true);
