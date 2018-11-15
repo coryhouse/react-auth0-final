@@ -15,22 +15,15 @@ class Courses extends Component {
       })
       .then(response => this.setState({ courses: response.courses }))
       .catch(error => this.setState({ message: error.message }));
-  }
 
-  deleteCourse(courseId) {
-    fetch(`/course/${courseId}`, {
-      method: "DELETE",
+    fetch("/admin", {
       headers: { Authorization: `Bearer ${this.props.auth.getAccessToken()}` }
     })
       .then(response => {
         if (response.ok) return response.json();
         throw new Error("Network response was not ok.");
       })
-      .then(response =>
-        this.setState(state => ({
-          courses: state.courses.filter(course => course.id !== courseId)
-        }))
-      )
+      .then(response => console.log(response))
       .catch(error => this.setState({ message: error.message }));
   }
 
@@ -38,16 +31,7 @@ class Courses extends Component {
     return (
       <ul>
         {this.state.courses.map(course => {
-          return (
-            <li key={course.id}>
-              {this.props.auth.userHasScopes(["delete:courses"]) && (
-                <button onClick={() => this.deleteCourse(course.id)}>
-                  Delete
-                </button>
-              )}{" "}
-              {course.title}
-            </li>
-          );
+          return <li key={course.id}>{course.title}</li>;
         })}
       </ul>
     );
