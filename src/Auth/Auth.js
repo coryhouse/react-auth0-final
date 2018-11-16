@@ -98,24 +98,18 @@ export default class Auth {
   }
 
   renewToken(cb) {
-    // The first parameter to checkSession allows us to specify the audience and scope.
-    // It uses the settings from when we instantiated this Auth0 WebAuth object
-    // if we omit these properties.
     this.auth0.checkSession({}, (err, result) => {
       if (err) {
         console.log(`Error: ${err.error} - ${err.error_description}.`);
       } else {
         this.setSession(result);
       }
-      if (cb) cb(result);
+      if (cb) cb(err, result);
     });
   }
 
   scheduleTokenRenewal() {
     const delay = _expiresAt - Date.now();
-    // Delay in milliseconds before requesting renewal.
-    // Will be 7200000 (120 minutes) immediately after login
-    // since Auth0's default token expiration is 2 hours.
     if (delay > 0) setTimeout(() => this.renewToken(), delay);
   }
 }
